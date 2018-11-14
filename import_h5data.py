@@ -16,8 +16,11 @@ sampling_rate = 20 #picks one in every 20 ratings
 
 altitude_barometer = np.array(f['df'].get('block1_values')[2])[::sampling_rate]
 raw_pressure = np.array(f['df'].get('block1_values')[start_index:end_index,45:49]).T[::,::sampling_rate]
-time = np.array(f['df'].get('axis1')[start_index:end_index])[::sampling_rate]
+time = np.array(f['df'].get('axis1')[start_index:end_index]).T[::sampling_rate]
+temp = np.array(f['df'].get('block1_values')[start_index:end_index,7]).T[::sampling_rate]
+press = np.array(f['df'].get('block1_values')[start_index:end_index,49]).T[::sampling_rate]
 
+print(np.size(temp))
 
 last_accepted_pressure = np.zeros((4))
 last_accepted_time = np.zeros((4))
@@ -80,10 +83,14 @@ bad_time_ranges = [
 for i in range(0, len(bad_time_ranges)):
     accepted = set_labels(accepted, start_time, bad_time_ranges[i][0], bad_time_ranges[i][1])
 
-training_set = pd.DataFrame(accepted, columns=["label"])
+training_set = pd.DataFrame(columns=["time", "temperature", "pressure", "press_change", "label"])
 training_set["time"] = time
-#print(training_set)
-np.savetxt("ssi_pressure_labels.csv", training_set)
+training_set["temperature"] = temp
+training_set["pressure"] = press
+training_set["press_change"] = [press[i] - press[i-1] if i > 0 else 0 for i in range(0,len(press))]
+training_set["label"] = accepted
+
+training_set.to_csv("ssi_pressure_labels.csv")
 
 """
 
