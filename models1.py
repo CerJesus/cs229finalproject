@@ -1,4 +1,5 @@
 from sklearn.svm import SVC
+from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import cross_val_score, cross_val_predict
 import pandas as pd
 import numpy as np
@@ -25,14 +26,25 @@ def test_svm_predict(x):
 
 x,y=get_features_labels("ssi_pressure_labels.csv")
 
+k = 10
+
+#Random Forest
+rf = RandomForestRegressor(n_estimators = 1000, random_state = 42)
+rfscores = cross_val_score(rf, x, y, cv = k)
+print("Random Forest Cross Validation Scores for k = ", k, ": ", rfscores)
+
+
+
+
 clf = SVC()
 
 
 #Cross Validation for SVM
-k = 10
 scores = cross_val_score(clf, x, y, cv = k)
 print("Cross Validation Scores for k = ", k, ": ", scores)
 clf.fit(x,y)
+
+
 
 
 #Run SVM model on a different time range
