@@ -79,26 +79,43 @@ def velocity_check(df_index, raw_pressure, time):
 
 accepted = np.ones(len(time))
 
-def set_labels(arr, start_time, a, b):
-    a_index = int((a - start_time)/(50*20))
-    b_index = int((b - start_time)/(50*20))
-    print(a_index, b_index)
-    arr[a_index:b_index] = np.zeros((b_index - a_index))
-    return(arr)
+""" OLD SET LABELS FUNCTION """
+# def set_labels(arr, start_time, a, b):
+#     a_index = int((a - start_time)/(50*20))
+#     b_index = int((b - start_time)/(50*20))
+#     print(a_index, b_index)
+#     arr[a_index:b_index] = np.zeros((b_index - a_index))
+#     return(arr)
 
+def is_bad_time(timestamp, time_ranges, shouldp):
+    if shouldp:
+        print(timestamp)
+        print(time_ranges[0][0])
+    for time_range in time_ranges:
+        if timestamp > time_range[0] and timestamp < time_range[1]:
+            return True
+    return False
+
+def set_labels(arr,bad_times, time_arr):
+    for i in range(len(time_arr)):
+        if is_bad_time(time_arr[i],bad_times, i == 892):
+            arr[i]=0
+    print(arr[892])
+    return arr
 
 bad_time_ranges = [
-(1529170069945, 1529170089030),
-(1529170260176, 1529170319689),
-(1529170941689, 1529171168560),
-(1529171797418, 1529171852313),
-(1529172292538, 1529172336343),
-(1529172859979, 1529172991451),
-(1529173465386, 1529173516745)
+(1529170069945000000, 1529170089030000000),
+(1529170260176000000, 1529170319689000000),
+(1529170941689000000, 1529171168560000000),
+(1529171797418000000, 1529171852313000000),
+(1529172292538000000, 1529172336343000000),
+(1529172859979000000, 1529172991451000000),
+(1529173465386000000, 1529173516745000000)
 ]
 
-for i in range(0, len(bad_time_ranges)):
-    accepted = set_labels(accepted, start_time, bad_time_ranges[i][0], bad_time_ranges[i][1])
+#for i in range(0, len(bad_time_ranges)):
+    #accepted = set_labels(accepted, start_time, bad_time_ranges[i][0], bad_time_ranges[i][1])
+accepted = set_labels(accepted,bad_time_ranges,time)
 
 training_set = pd.DataFrame(columns=["time", "temperature", "pressure", "press_change", "label"])
 training_set["time"] = time
@@ -110,7 +127,7 @@ training_set["label"] = accepted
 training_set.to_csv(output_file)
 
 """
-
+FIRST SET (FOR TRAINING)
         time            index
 start   1529169147562   3368179
 end     1529173744553   3460119
@@ -123,6 +140,22 @@ labelling: these are *time* ranges where sensor readings are bad:
 1529172292538 - 1529172336343
 1529172859979 - 1529172991451
 1529173465386 - 1529173516745
+
+SECOND SET (FOR TESTING)
+        time            index
+start   1529136796166   3368179
+end     1529173744553   3460119
+
+labelling: these are *time* ranges where sensor readings are bad:
+1529170069945 - 1529170089030
+1529170260176 - 1529170319689
+1529170941689 - 1529171168560
+1529171797418 - 1529171852313
+1529172292538 - 1529172336343
+1529172859979 - 1529172991451
+1529173465386 - 1529173516745
+
+
 
 features:
 - previous X readings
