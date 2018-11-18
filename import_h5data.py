@@ -1,6 +1,7 @@
 import h5py
 import numpy as np
 import pandas as pd
+import sys
 
 ERROR_REJECTION_DT = 0.5
 ERROR_REJECTION_VEL = 10
@@ -8,9 +9,26 @@ ERROR_REJECTION_SD = 3.4
 slope_coef = 940.9411
 slope_pow = -.8097
 
+
+
 f = h5py.File('../../CS229/ssi71.h5','r')
-start_index = 3368179 #1529169147562
-end_index = 3460119 #1529173744553
+
+#Use sys parameters if you want to import a different time range! If not, defaults are given.
+if len(sys.argv) < 4:
+    print("Parameters: <output_file.csv> <start_index> <end_index> <start_time>")
+    print(len(sys.argv))
+    output_file = "ssi_pressure_labels.csv"
+    start_index = 3368179 #1529169147562
+    end_index = 3460119 #1529173744553
+    start_time = 1529169147562
+    #start_time = 1529175944249
+else:
+    print("sys:", sys.argv)
+    output_file = sys.argv[1]
+    start_index = int(sys.argv[2])
+    end_index = int(sys.argv[3])
+    start_time = int(sys.argv[4])
+
 n_sensors = 4
 sampling_rate = 20 #picks one in every 20 ratings
 
@@ -68,7 +86,6 @@ def set_labels(arr, start_time, a, b):
     arr[a_index:b_index] = np.zeros((b_index - a_index))
     return(arr)
 
-start_time = 1529169147562
 
 bad_time_ranges = [
 (1529170069945, 1529170089030),
@@ -90,7 +107,7 @@ training_set["pressure"] = press
 training_set["press_change"] = [press[i] - press[i-1] if i > 0 else 0 for i in range(0,len(press))]
 training_set["label"] = accepted
 
-training_set.to_csv("ssi_pressure_labels.csv")
+training_set.to_csv(output_file)
 
 """
 
