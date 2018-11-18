@@ -145,11 +145,22 @@ training_set["time"] = time
 training_set["temperature"] = temp
 training_set["pressure"] = press
 training_set["press_change"] = [press[i] - press[i-1] if i > 0 else 0 for i in range(0,len(press))]
+
 training_set["label"] = accepted
 
 training_set.to_csv(output_file)
+training_set["temp_change"] = [temp[i] - temp[i-1] if i > 0 else 0 for i in range(0,len(temp))]
 
+#Some summary stats:
 print("Counts: ", training_set.groupby("label").count()["pressure"])
+print("Mean absolute pressure change over 1 second: ", training_set.apply(abs).groupby("label").mean()["press_change"])
+print("SD of absolute pressure change over 1 second: ", training_set.apply(abs).groupby("label").std()["press_change"])
+print("Mean absolute temperature change over 1 second: ", training_set.apply(abs).groupby("label").mean()["temp_change"])
+print("SD of absolute temperature change over 1 second: ", training_set.apply(abs).groupby("label").std()["temp_change"])
+print("Mean temperature: ", training_set.groupby("label").mean()["temperature"])
+print("SD of temperature: ", training_set.groupby("label").std()["temperature"])
+
+#pressure change seems like it could be a pretty salient feature, temperature not so much.
 
 """
 FIRST SET (FOR TRAINING)
