@@ -1,5 +1,6 @@
 from sklearn.svm import SVC
 from sklearn.ensemble import RandomForestRegressor
+from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import cross_val_score, cross_val_predict
 import pandas as pd
 import numpy as np
@@ -26,7 +27,13 @@ def test_svm_predict(x):
 
 x,y=get_features_labels("ssi_pressure_labels.csv")
 
-k = 10
+k = 20
+
+#Logistic regression
+lr = LogisticRegression()
+lrscores = cross_val_score(lr, x, y, cv=k)
+print("Logistic Regression Cross Validation Scores for k = ", k, ": ", lrscores)
+
 
 #Random Forest
 rf = RandomForestRegressor(n_estimators = 1000, random_state = 42)
