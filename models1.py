@@ -20,40 +20,51 @@ def get_features_labels(file):
     y = training_data["label"]
     return(x,y)
 
-def test_svm_predict(x):
-    test_pred = clf.predict(test_x)
-    test_x["predictions"] = test_pred
-    test_x.to_csv("ssi_pressure_test_pred.csv")
+def test_predict(model, features):
+    test_pred = model.predict(features)
+    features["predictions"] = test_pred
+    #features.to_csv("ssi_pressure_test_pred.csv")
+    print("Counts: ", features.groupby("predictions").count()["pressure"])
 
 x,y=get_features_labels("ssi_pressure_labels.csv")
 
-k = 20
+k = 10
 
 #Logistic regression
 lr = LogisticRegression()
 lrscores = cross_val_score(lr, x, y, cv=k)
 print("Logistic Regression Cross Validation Scores for k = ", k, ": ", lrscores)
+test_x,test_y = get_features_labels("ssi_pressure_test1_badaltitude.csv")
+print(test_x.columns)
+#test
+lr.fit(x,y)
+print("Logistic Regression score on test data (altitude-based labels): ", lr.score(test_x, test_y))
+test_predict(lr,test_x)
 
-
-#Random Forest
-rf = RandomForestRegressor(n_estimators = 1000, random_state = 42)
-rfscores = cross_val_score(rf, x, y, cv = k)
-print("Random Forest Cross Validation Scores for k = ", k, ": ", rfscores)
-
-
-
-
+#SVM
 clf = SVC()
-
-
 #Cross Validation for SVM
 scores = cross_val_score(clf, x, y, cv = k)
 print("Cross Validation Scores for k = ", k, ": ", scores)
 clf.fit(x,y)
 
+#Prediction accuracy on train set
+print("SVM score on train data: ", clf.score(x, y))
+test_predict(clf,x)
 
+#Predictions on test set (labeled based on altitude)
+test_x,test_y = get_features_labels("ssi_pressure_test1_badaltitude.csv")
+print(test_x.columns)
+print("SVM score on test data (altitude-based labels): ", clf.score(test_x, test_y))
+test_predict(clf,test_x)
 
+#Predictions on test set (labeled based on pressure)
+test_x,test_y = get_features_labels("ssi_pressure_test1_badpressure.csv")
+print(test_x.columns)
+print("SVM score on test data (pressure-based labels): ", clf.score(test_x, test_y))
+test_predict(clf,test_x)
 
-#Run SVM model on a different time range
-test_x,test_y = get_features_labels("ssi_pressure_test1.csv")
-test_svm_predict(test_x)
+#Random Forest
+rf = RandomForestRegressor(n_estimators = 1000, random_state = 42)
+rfscores = cross_val_score(rf, x, y, cv = k)
+print("Random Forest Cross Validation Scores for k = ", k, ": ", rfscores)

@@ -113,6 +113,29 @@ bad_time_ranges = [
 (1529173465386000000, 1529173516745000000)
 ]
 
+"""test set - based on altitude:"""
+# bad_time_ranges = [
+# (1529137374461000000, 1529137381161000000),
+# (1529137703076000000, 1529137763631000000),
+# (1529138276204000000, 1529138399988000000),
+# (1529138631501000000, 1529138633301000000),
+# (1529138686265000000, 1529138687599000000),
+# (1529138910679000000, 1529138925414000000),
+# (1529139410504000000, 1529139596603000000),
+# (1529139824381000000, 1529139835316000000)
+# ]
+
+"""test set: based on pressure:"""
+# bad_time_ranges = [
+# (1529137315606000000, 1529137335956000000),
+# (1529137684226000000, 1529137730979000000),
+# (1529138243472000000, 1529138361764000000),
+# (1529138616462000000, 1529138637401000000),
+# (1529138867016000000, 1529138896740000000),
+# (1529139373291000000, 1529139561532000000),
+# (1529139765616000000, 1529139888808000000)
+# ]
+
 #for i in range(0, len(bad_time_ranges)):
     #accepted = set_labels(accepted, start_time, bad_time_ranges[i][0], bad_time_ranges[i][1])
 accepted = set_labels(accepted,bad_time_ranges,time)
@@ -125,6 +148,8 @@ training_set["press_change"] = [press[i] - press[i-1] if i > 0 else 0 for i in r
 training_set["label"] = accepted
 
 training_set.to_csv(output_file)
+
+print("Counts: ", training_set.groupby("label").count()["pressure"])
 
 """
 FIRST SET (FOR TRAINING)
@@ -146,7 +171,7 @@ SECOND SET (FOR TESTING)
 start   1529136796191   2742657
 end     1529139900309   2803171
 
-labelling: these are *time* ranges where altitude readings are bad: 
+labelling: these are *time* ranges where altitude readings are bad:
 1529137374461 - 1529137381161
 1529137703076 - 1529137763631
 1529138276204 - 1529138399988
@@ -156,7 +181,7 @@ labelling: these are *time* ranges where altitude readings are bad:
 1529139410504 - 1529139596603
 1529139824381 - 1529139835316
 
-labelling: these are *time* ranges where pressure readings are bad: 
+labelling: these are *time* ranges where pressure readings are bad:
 1529137315606 - 1529137335956
 1529137684226 - 1529137730979
 1529138243472 - 1529138361764
