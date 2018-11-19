@@ -38,6 +38,7 @@ time = np.array(f['df'].get('axis1')[start_index:end_index]).T[::sampling_rate]
 temp = np.array(f['df'].get('block1_values')[start_index:end_index,7]).T[::sampling_rate]
 press = np.array(f['df'].get('block1_values')[start_index:end_index,49]).T[::sampling_rate]
 
+
 print(np.size(temp))
 
 last_accepted_pressure = np.zeros((4))
@@ -103,6 +104,7 @@ def set_labels(arr,bad_times, time_arr):
     print(arr[892])
     return arr
 
+""" ssi_pressure_labels.csv"""
 bad_time_ranges = [
 (1529170069945000000, 1529170089030000000),
 (1529170260176000000, 1529170319689000000),
@@ -112,6 +114,7 @@ bad_time_ranges = [
 (1529172859979000000, 1529172991451000000),
 (1529173465386000000, 1529173516745000000)
 ]
+
 
 """test set - based on altitude:"""
 # bad_time_ranges = [
@@ -136,6 +139,7 @@ bad_time_ranges = [
 # (1529139765616000000, 1529139888808000000)
 # ]
 
+
 #for i in range(0, len(bad_time_ranges)):
     #accepted = set_labels(accepted, start_time, bad_time_ranges[i][0], bad_time_ranges[i][1])
 accepted = set_labels(accepted,bad_time_ranges,time)
@@ -144,7 +148,8 @@ training_set = pd.DataFrame(columns=["time", "temperature", "pressure", "press_c
 training_set["time"] = time
 training_set["temperature"] = temp
 training_set["pressure"] = press
-training_set["press_change"] = [press[i] - press[i-1] if i > 0 else 0 for i in range(0,len(press))]
+training_set["press_change"] = [abs(press[i] - press[i-1]) if i > 0 else 0 for i in range(0,len(press))]
+training_set["var"] = [np.var(press[j-5:j]) if j >= 5 else 0 for j in range(len(press))]
 
 training_set["label"] = accepted
 
