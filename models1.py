@@ -37,25 +37,28 @@ print(y)
 k = 10
 
 
-clf = SVC()
+
 
 #Logistic regression
 
 lr = LogisticRegression()
-lrscores = cross_val_score(lr, x, y, cv=k)
-print("Logistic Regression Cross Validation Scores for k = ", k, ": ", lrscores)
-test_x,test_y = get_features_labels("ssi_pressure_test1_badaltitude.csv")
-#print(test_x.columns)
-#test
+lrscores = np.mean(cross_val_score(lr, x, y, cv=k))
+print("Logistic Regression Average Cross Validation Scores for k = ", k, ": ", lrscores)
 lr.fit(x,y)
+
+print("RF score on train data: ", lr.score(x, y))
+test_predict(lr,x)
+
+test_x,test_y = get_features_labels("ssi_pressure_test1_badaltitude.csv")
 print("Logistic Regression score on test data (altitude-based labels): ", lr.score(test_x, test_y))
 test_predict(lr,test_x)
 
+x,y=get_features_labels("ssi_pressure_labels.csv")
 #SVM
 clf = SVC()
 #Cross Validation for SVM
-scores = cross_val_score(clf, x, y, cv = k)
-print("SVM Cross Validation Scores for k = ", k, ": ", scores)
+scores = np.mean(cross_val_score(clf, x, y, cv = k))
+print("SVM Average Cross Validation Scores for k = ", k, ": ", scores)
 clf.fit(x,y)
 
 #Prediction accuracy on train set
@@ -76,13 +79,14 @@ test_predict(clf,test_x)
 x,y=get_features_labels("ssi_pressure_labels.csv")
 #Random Forest
 rf = RandomForestClassifier(n_estimators = 1000, random_state = 42)
-rfscores = cross_val_score(rf, x, y, cv = k)
-print("Random Forest Cross Validation Scores for k = ", k, ": ", rfscores)
+rfscores = np.mean(cross_val_score(rf, x, y, cv = k))
+print("Random Forest Average Cross Validation Scores for k = ", k, ": ", rfscores)
 rf.fit(x,y)
 
+print("RF score on train data: ", clf.score(x, y))
+test_predict(rf,x)
 #Predictions on test set (labeled based on altitude)
 test_x,test_y = get_features_labels("ssi_pressure_test1_badaltitude.csv")
-print(x, test_x)
 print("Random Forest score on test data (altitude-based labels): ", rf.score(test_x, test_y))
 test_predict(rf,test_x)
 
