@@ -17,10 +17,10 @@ f = h5py.File('../../CS229/ssi71.h5','r')
 if len(sys.argv) < 4:
     print("Parameters: <output_file.csv> <start_index> <end_index> <start_time>")
     print(len(sys.argv))
-    output_file = "ssi_pressure_labels.csv"
-    start_index = 3368179 #1529169147562
-    end_index = 3460119 #1529173744553
-    start_time = 1529169147562
+    output_file = "ssi_pressure_testfin_badpressure.csv"
+    start_index = 1245310#2742657#3368179 #1529169147562
+    end_index = 1283940#2803171#3460119 #1529173744553
+    start_time = 1529059500000#1529169147562#1529169147562
     #start_time = 1529175944249
 else:
     print("sys:", sys.argv)
@@ -38,6 +38,11 @@ time = np.array(f['df'].get('axis1')[start_index:end_index]).T[::sampling_rate]
 temp = np.array(f['df'].get('block1_values')[start_index:end_index,7]).T[::sampling_rate]
 press = np.array(f['df'].get('block1_values')[start_index:end_index,49]).T[::sampling_rate]
 
+bmp1rej = np.array(f['df'].get('block5_values')[start_index:end_index,13]).T[::sampling_rate]
+bmp2rej = np.array(f['df'].get('block5_values')[start_index:end_index,14]).T[::sampling_rate]
+bmp3rej = np.array(f['df'].get('block5_values')[start_index:end_index,15]).T[::sampling_rate]
+bmp4rej = np.array(f['df'].get('block5_values')[start_index:end_index,16]).T[::sampling_rate]
+ascentrate = np.array(f['df'].get('block1_values')[start_index:end_index,4]).T[::sampling_rate]
 
 print(np.size(temp))
 
@@ -69,14 +74,14 @@ def velocity_check(df_index, raw_pressure, time):
 
     return accepts
 
-# accepted = np.zeros((n_sensors, end_index - start_index))
-# print(accepted)
+# acceptedbasic = np.zeros((n_sensors, end_index - start_index))
+# print(acceptedbasic)
 # for k in range(0, end_index - start_index):
 #     new_accepts = velocity_check(k, raw_pressure, time)
 #     for j in range(0, n_sensors):
-#         accepted[j][k] = new_accepts[j]
-#         if new_accepts[j] == 1:
-#             print(time[k])
+#         acceptedbasic[j][k] = new_accepts[j]
+#         if np.sum(acceptedbasic[j]) < 2:
+
 
 accepted = np.ones(len(time))
 
@@ -91,32 +96,33 @@ accepted = np.ones(len(time))
 def is_bad_time(timestamp, time_ranges, shouldp):
     if shouldp:
         print(timestamp)
-        print(time_ranges[0][0])
+        # print(time_ranges[0][0])
+
     for time_range in time_ranges:
         if timestamp > time_range[0] and timestamp < time_range[1]:
+
             return True
     return False
 
 def set_labels(arr,bad_times, time_arr):
     for i in range(len(time_arr)):
-        if is_bad_time(time_arr[i],bad_times, i == 892):
+        if is_bad_time(time_arr[i],bad_times, False):
             arr[i]=0
-    print(arr[892])
     return arr
 
-# """ ssi_pressure_labels.csv"""
-bad_time_ranges = [
-(1529170069945000000, 1529170089030000000),
-(1529170260176000000, 1529170319689000000),
-(1529170941689000000, 1529171168560000000),
-(1529171797418000000, 1529171852313000000),
-(1529172292538000000, 1529172336343000000),
-(1529172859979000000, 1529172991451000000),
-(1529173465386000000, 1529173516745000000)
-]
+""" ssi_pressure_labels.csv"""
+# bad_time_ranges = [
+# (1529170069945000000, 1529170089030000000),
+# (1529170260176000000, 1529170319689000000),
+# (1529170941689000000, 1529171168560000000),
+# (1529171797418000000, 1529171852313000000),
+# (1529172292538000000, 1529172336343000000),
+# (1529172859979000000, 1529172991451000000),
+# (1529173465386000000, 1529173516745000000)
+# ]
 
 
-"""test set - based on altitude:"""
+"""val set - based on altitude:"""
 # bad_time_ranges = [
 # (1529137374461000000, 1529137381161000000),
 # (1529137703076000000, 1529137763631000000),
@@ -128,7 +134,7 @@ bad_time_ranges = [
 # (1529139824381000000, 1529139835316000000)
 # ]
 
-"""test set: based on pressure:"""
+"""val set: based on pressure:"""
 # bad_time_ranges = [
 # (1529137315606000000, 1529137335956000000),
 # (1529137684226000000, 1529137730979000000),
@@ -139,10 +145,39 @@ bad_time_ranges = [
 # (1529139765616000000, 1529139888808000000)
 # ]
 
+"""test set: based on pressure:"""
+bad_time_ranges = [
+(1529059986834000000, 1529060064462000000),
+(1529060193146000000, 1529060232469000000),
+(1529060392526000000, 1529060407416000000),
+(1529060608350000000, 1529060669500000000),
+(1529061068781000000, 1529061111354000000),
+(1529061304338000000, 1529061332515000000)
+]
+
 
 #for i in range(0, len(bad_time_ranges)):
     #accepted = set_labels(accepted, start_time, bad_time_ranges[i][0], bad_time_ranges[i][1])
 accepted = set_labels(accepted,bad_time_ranges,time)
+
+
+baselinepreds = np.ones(len(time))
+numCorrect = 0
+for i in range(0,len(baselinepreds)):
+    # diff1 = bmp1rej[i] - bmp1rej[i-1]
+    # diff2 = bmp2rej[i] - bmp2rej[i-1]
+    # diff3 = bmp3rej[i] - bmp3rej[i-1]
+    # diff4 = bmp4rej[i] - bmp4rej[i-1]
+    #
+    # sum = diff1 + diff2 + diff3 + diff4
+    if ascentrate[i] > 20:
+        baselinepreds[i] = 0
+    else:
+        baselinepreds[i] = 1
+    if baselinepreds[i] == accepted[i]:
+        numCorrect+=1
+print("Baseline correct rate: ", numCorrect/len(time))
+
 
 training_set = pd.DataFrame(columns=["time", "temperature", "pressure", "press_change", "label"])
 training_set["time"] = time
@@ -182,7 +217,7 @@ labelling: these are *time* ranges where sensor readings are bad:
 1529172859979 - 1529172991451
 1529173465386 - 1529173516745
 
-SECOND SET (FOR TESTING)
+SECOND SET (FOR VALIDATION)
         time            index
 start   1529136796191   2742657
 end     1529139900309   2803171
@@ -205,6 +240,21 @@ labelling: these are *time* ranges where pressure readings are bad:
 1529138867016 - 1529138896740
 1529139373291 - 1529139561532
 1529139765616 - 1529139888808
+
+
+THIRD SET (FOR TESTING)
+        time            index
+start   1529059500000   1245310
+end     1529061500000   1283940
+
+labelling: these are *time* ranges where pressure readings are bad:
+1529059986834 - 1529060064462
+1529060193146 - 1529060232469
+1529060392526 - 1529060407416
+1529060608350 - 1529060669500
+1529061068781 - 1529061111354
+1529061304338 - 1529061332515
+
 
 features:
 - previous X readings
